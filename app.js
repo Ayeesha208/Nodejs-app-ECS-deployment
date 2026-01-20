@@ -22,26 +22,27 @@
 //     console.log(`[Version ${version}]: Server running at http://${hostname}:${port}/`);
 // })
 
-
 const express = require('express');
+const path = require('path');
+
 const app = express();
 
 // ECS / Docker compatible
-const port = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 const version = '1.0.0';
 
+// Root endpoint
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + "/html/index.html");
-    console.log(`[Version ${version}]: New request => ${req.url}`);
+    res.sendFile(path.join(__dirname, 'html', 'index.html'));
+    console.log(`[Version ${version}] Request => ${req.method} ${req.url}`);
 });
 
-// Health check
+// Health check (ALB MUST hit this)
 app.get('/health', (req, res) => {
-    res.sendStatus(200);
-    console.log(`[Version ${version}]: Health check`);
+    res.status(200).send('OK');
 });
 
-// IMPORTANT CHANGE HERE
-app.listen(port, "0.0.0.0", () => {
-    console.log(`[Version ${version}]: Server running on port ${port}`);
+// IMPORTANT: Bind to all interfaces for ECS
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`[Version ${version}] Server running on port ${PORT}`);
 });
